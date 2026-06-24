@@ -1,0 +1,17 @@
+# Ambiente e segredos
+.env
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Ferramentas / SO
+.DS_Store
+.idea/
+.vscode/
+
+# Logs
+*.log

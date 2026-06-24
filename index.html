@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prova de Algoritmos e Reconhecimento de Padrões</title>
+<link rel="stylesheet" href="./styles/main.css">
+</head>
+<body>
+
+<div class="wrap" id="screen-rules">
+  <div class="card"><div class="pad">
+    <div class="eyebrow">Antes de começar · leia com atenção</div>
+    <h1>Regras da avaliação</h1>
+    <p class="sub">Esta prova roda em modo seguro. Confirme que leu e concorda com as regras abaixo para acessar o login.</p>
+    <div class="rule"></div>
+    <ol id="rules-list" class="rules"></ol>
+    <div class="rule"></div>
+    <label class="accept" id="accept-row">
+      <input type="checkbox" id="accept-check">
+      <span>Li e concordo com as regras acima.</span>
+    </label>
+    <div class="row" style="margin-top:18px">
+      <button class="btn" id="btn-accept" disabled>Aceitar e ir para o login</button>
+    </div>
+  </div></div>
+</div>
+
+<div class="wrap hide" id="screen-login">
+  <div class="card"><div class="pad">
+    <div class="eyebrow">Avaliação · Modo Seguro</div>
+    <h1>Prova de Algoritmos<br>e Reconhecimento de Padrões</h1>
+    <p class="sub">20 questões objetivas, sorteadas individualmente. Entre com login e senha. A prova só pode ser respondida com o mouse.</p>
+    <div class="rule"></div>
+    <div class="field"><label for="login">Login</label><input type="text" id="login" autocomplete="off" spellcheck="false"></div>
+    <div class="field"><label for="senha">Senha</label><input type="password" id="senha" autocomplete="off"></div>
+    <div class="row">
+      <button class="btn" id="btn-entrar">Iniciar prova</button>
+      <button class="btn alt" id="btn-admin">Área do professor</button>
+    </div>
+    <div class="err" id="login-err"></div>
+    <div class="hint" id="login-hint">Aguardando carregamento da lista de estudantes pelo professor.</div>
+  </div></div>
+</div>
+
+<div class="wrap hide" id="screen-admin">
+  <div class="card"><div class="pad">
+    <div class="eyebrow">Área do professor</div>
+    <h1>Configuração da prova</h1>
+    <p class="sub">Carregue a lista de estudantes (CSV) e, ao fim da aplicação, baixe o gabarito e os resultados consolidados.</p>
+    <div class="rule"></div>
+    <h2>1. Parâmetros da prova</h2>
+    <p class="hint">Defina antes de aplicar. Valem para todos os estudantes; cada um recebe um sorteio diferente das mesmas questões.</p>
+    <div class="row" style="margin-top:14px; align-items:flex-end; gap:20px">
+      <div class="field" style="margin-bottom:0">
+        <label for="cfg-questions">Quantidade de questões</label>
+        <input type="number" id="cfg-questions" min="5" step="1" style="width:140px">
+        <span class="hint" id="cfg-questions-range"></span>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label for="cfg-minutes">Tempo (minutos)</label>
+        <input type="number" id="cfg-minutes" min="5" step="1" style="width:140px">
+      </div>
+      <button class="btn" id="btn-save-config">Salvar parâmetros</button>
+    </div>
+    <div class="err" id="cfg-err"></div>
+    <p class="hint" id="cfg-current"></p>
+
+    <div class="rule"></div>
+    <h2>2. Lista de estudantes</h2>
+    <p class="hint">Formato do CSV: duas colunas <span class="pill">login,senha</span>, uma linha por estudante (até 40). Cabeçalho opcional.</p>
+    <div class="field" style="margin-top:14px">
+      <button class="btn alt" id="btn-pick-csv">Selecionar arquivo CSV</button>
+      <input type="file" id="csv-input" accept=".csv,text/csv" class="hide">
+      <span class="pill" id="csv-status" style="margin-left:10px">nenhum arquivo</span>
+    </div>
+    <p class="hint">Sem arquivo, o sistema usa uma lista de teste (<span class="pill">aluno01 / 123</span> … <span class="pill">aluno40 / 123</span>).</p>
+    <div class="rule"></div>
+    <h2>3. Gabarito e resultados</h2>
+    <p class="hint">O gabarito comentado fica só aqui. Os resultados aparecem conforme os estudantes finalizam.</p>
+    <div class="row" style="margin-top:14px">
+      <button class="btn" id="btn-export">Baixar resultados (CSV)</button>
+      <button class="btn alt" id="btn-gabarito">Ver gabarito comentado</button>
+      <button class="btn alt warn" id="btn-clear">Apagar resultados</button>
+    </div>
+    <div id="results-box"></div>
+    <div class="rule"></div>
+    <button class="btn alt" id="btn-admin-back">Voltar ao login</button>
+  </div></div>
+</div>
+
+<div class="wrap hide" id="screen-gab">
+  <div class="card"><div class="pad">
+    <div class="eyebrow">Confidencial · professor</div>
+    <h1>Gabarito comentado</h1>
+    <p class="sub">Banco completo de questões com resposta correta e justificativa.</p>
+    <div class="rule"></div>
+    <div id="gab-list"></div>
+    <div class="rule"></div>
+    <button class="btn alt" id="btn-gab-back">Voltar</button>
+  </div></div>
+</div>
+
+<div class="hide" id="screen-exam">
+  <div class="topbar"><span id="exam-who">—</span><span class="timer" id="exam-timer">02:00:00</span></div>
+  <div class="watermark" id="watermark" aria-hidden="true"></div>
+  <div class="veil" id="veil" aria-hidden="true"><div class="veil-msg" id="veil-msg">Tela protegida</div></div>
+  <div class="examwrap" id="exam-scroll"></div>
+  <div class="progress">
+    <span class="pcount" id="exam-progress">0 / 20 respondidas</span>
+    <button class="btn warn" id="btn-finish">Finalizar e enviar</button>
+  </div>
+</div>
+
+<div class="wrap hide" id="screen-done">
+  <div class="card"><div class="pad" style="text-align:center">
+    <div class="eyebrow">Prova enviada</div>
+    <h1>Respostas registradas</h1>
+    <p class="sub" id="done-msg">Sua prova foi enviada com sucesso.</p>
+    <div class="rule"></div>
+    <div class="scorebig" id="done-score">—</div>
+    <p class="hint" id="done-detail"></p>
+    <div class="rule"></div>
+    <button class="btn alt" id="btn-done-back">Sair</button>
+  </div></div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="inner">
+    <h2 id="ov-title">Atenção</h2>
+    <p id="ov-msg"></p>
+    <button class="btn warn" id="ov-resume">Voltar à prova</button>
+  </div>
+</div>
+
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>

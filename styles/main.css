@@ -1,0 +1,99 @@
+:root{
+  --ink:#101418; --paper:#f5f0e6; --line:#cfc6b4;
+  --accent:#1b4d3e; --accent2:#c6582b; --warn:#a01b1b;
+  --soft:#e7e0d0; --muted:#6b6457;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:"Iowan Old Style","Palatino Linotype",Georgia,serif;
+  background:var(--paper); color:var(--ink);
+  -webkit-user-select:none; user-select:none; overflow:hidden;
+}
+.wrap{height:100vh; display:flex; align-items:center; justify-content:center; padding:24px}
+.card{background:#fffdf7; border:1px solid var(--line); width:min(880px,100%);
+  max-height:92vh; overflow:auto; box-shadow:0 18px 50px rgba(16,20,24,.14)}
+.pad{padding:40px 46px}
+.eyebrow{font-family:"DejaVu Sans Mono",ui-monospace,monospace; font-size:11px;
+  letter-spacing:.28em; text-transform:uppercase; color:var(--accent2); margin-bottom:14px}
+h1{font-size:30px; line-height:1.1; font-weight:700; letter-spacing:-.01em}
+h2{font-size:20px; font-weight:700; margin-bottom:6px}
+p.sub{color:var(--muted); margin-top:10px; font-size:15px; line-height:1.5}
+.rule{height:1px; background:var(--line); margin:26px 0}
+label{display:block; font-family:"DejaVu Sans Mono",monospace; font-size:11px;
+  letter-spacing:.18em; text-transform:uppercase; color:var(--muted); margin:0 0 7px}
+input[type=text],input[type=password],input[type=number]{width:100%; padding:13px 14px; border:1px solid var(--line);
+  background:#fffdf7; font-size:16px; font-family:inherit; color:var(--ink)}
+input:focus{outline:2px solid var(--accent); outline-offset:-1px}
+.field{margin-bottom:18px}
+.btn{appearance:none; border:none; cursor:pointer; font-family:"DejaVu Sans Mono",monospace;
+  font-size:13px; letter-spacing:.14em; text-transform:uppercase; padding:14px 22px;
+  background:var(--accent); color:#fffdf7}
+.btn:hover{background:#143a2f}
+.btn.alt{background:transparent; color:var(--accent); border:1px solid var(--accent)}
+.btn.alt:hover{background:var(--soft)}
+.btn.warn{background:var(--accent2)} .btn.warn:hover{background:#a8431d}
+.err{color:var(--warn); font-size:14px; margin-top:6px; min-height:18px}
+.hint{font-size:13px; color:var(--muted); margin-top:8px; line-height:1.5}
+.row{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
+.topbar{position:fixed; top:0; left:0; right:0; display:flex; justify-content:space-between;
+  align-items:center; padding:10px 20px; background:var(--accent); color:#fffdf7;
+  font-family:"DejaVu Sans Mono",monospace; font-size:12px; letter-spacing:.06em; z-index:50}
+.timer{font-size:15px; font-weight:700; letter-spacing:.08em}
+.timer.low{color:#ffd2c2}
+.examwrap{height:100vh; padding:56px 24px 84px; overflow:auto}
+.qcard{background:#fffdf7; border:1px solid var(--line); width:min(820px,100%);
+  margin:0 auto 20px; padding:30px 34px}
+.qnum{font-family:"DejaVu Sans Mono",monospace; font-size:11px; letter-spacing:.22em;
+  text-transform:uppercase; color:var(--accent2); margin-bottom:12px}
+.qtext{font-size:18px; line-height:1.45; margin-bottom:20px}
+.opt{display:flex; gap:13px; align-items:flex-start; padding:13px 15px; border:1px solid var(--line);
+  margin-bottom:10px; cursor:pointer; background:#fffdf7; transition:background .12s}
+.opt:hover{background:var(--soft)}
+.opt.sel{border-color:var(--accent); background:#eef4f0; box-shadow:inset 3px 0 0 var(--accent)}
+.mark{flex:0 0 auto; width:24px; height:24px; border:1px solid var(--line); border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-family:"DejaVu Sans Mono",monospace; font-size:12px; margin-top:1px}
+.opt.sel .mark{background:var(--accent); color:#fffdf7; border-color:var(--accent)}
+.otext{font-size:16px; line-height:1.4}
+.progress{position:fixed; bottom:0; left:0; right:0; background:#fffdf7; border-top:1px solid var(--line);
+  padding:14px 24px; display:flex; justify-content:space-between; align-items:center; z-index:40}
+.pcount{font-family:"DejaVu Sans Mono",monospace; font-size:13px; color:var(--muted)}
+.overlay{position:fixed; inset:0; background:rgba(16,20,24,.92); color:#fffdf7; z-index:100;
+  display:none; align-items:center; justify-content:center; text-align:center; padding:30px}
+.overlay.show{display:flex}
+.overlay .inner{max-width:460px}
+.overlay h2{color:#fffdf7; font-size:24px}
+.overlay p{margin:14px 0 22px; line-height:1.6; color:#e7e0d0}
+table{width:100%; border-collapse:collapse; font-size:14px; margin-top:14px}
+th,td{border:1px solid var(--line); padding:8px 10px; text-align:left}
+th{background:var(--soft); font-family:"DejaVu Sans Mono",monospace; font-size:11px;
+  letter-spacing:.1em; text-transform:uppercase}
+.pill{display:inline-block; font-family:"DejaVu Sans Mono",monospace; font-size:11px;
+  padding:3px 9px; background:var(--soft); letter-spacing:.08em}
+.hide{display:none!important}
+.scorebig{font-size:54px; font-weight:700; color:var(--accent); letter-spacing:-.02em}
+
+/* Tela de regras */
+.rules{margin:4px 0 0; padding-left:22px}
+.rules li{font-size:15px; line-height:1.5; margin-bottom:12px; color:var(--ink)}
+.accept{display:flex; gap:11px; align-items:flex-start; cursor:pointer; font-size:15px; line-height:1.4}
+.accept input{margin-top:3px; width:18px; height:18px; cursor:pointer; accent-color:var(--accent)}
+
+/* Marca d'água com o login, repetida sobre a prova */
+.watermark{position:fixed; inset:0; z-index:30; pointer-events:none;
+  display:flex; flex-wrap:wrap; align-content:center; justify-content:center;
+  gap:64px 80px; overflow:hidden; transform:rotate(-28deg) scale(1.4);
+  opacity:.10; mix-blend-mode:multiply}
+.watermark span{font-family:"DejaVu Sans Mono",monospace; font-size:18px;
+  letter-spacing:.18em; color:var(--accent); white-space:nowrap; font-weight:700}
+
+/* Véu de borrão ativado em tentativa de captura ou perda de foco */
+.veil{position:fixed; inset:0; z-index:90; display:none;
+  align-items:center; justify-content:center;
+  background:repeating-linear-gradient(45deg,#101418 0 22px,#1b4d3e 22px 44px);
+  -webkit-backdrop-filter:blur(18px); backdrop-filter:blur(18px)}
+.veil.show{display:flex}
+.veil-msg{font-family:"DejaVu Sans Mono",monospace; font-size:18px; letter-spacing:.18em;
+  text-transform:uppercase; color:#fffdf7; background:rgba(16,20,24,.6); padding:18px 26px;
+  text-align:center; line-height:1.5}
