@@ -1,7 +1,5 @@
-import { Config } from "../config/Config.js";
-
 // Travas de tela do modo seguro: bloqueio de teclado, detecção de saída do mouse,
-// perda de foco, troca de aba, mouse parado e tentativa de PrintScreen, mais o overlay de advertência.
+// perda de foco, troca de aba e tentativa de PrintScreen, mais o overlay de advertência.
 //
 // Aviso honesto: o navegador NÃO consegue bloquear o print screen do sistema nem uma
 // foto de celular. A tecla PrintScreen chega ao JavaScript apenas em alguns
@@ -15,7 +13,6 @@ let onVeilRelease = null; // () -> libera a tela
 let listeners = [];
 let veilReasons = new Set();
 let veilMessage = "Tela protegida";
-let idleTimerId = null;
 
 function syncVeil() {
   if (veilReasons.size > 0) onVeilHold(veilMessage);
@@ -31,22 +28,6 @@ function holdVeilFor(reason, message) {
 function releaseVeilFor(reason) {
   veilReasons.delete(reason);
   syncVeil();
-}
-
-function resetIdleTimer() {
-  clearTimeout(idleTimerId);
-  releaseVeilFor("idle");
-  idleTimerId = setTimeout(() => {
-    onViolation(
-      "Mouse parado",
-      "Mantenha o cursor em movimento durante a prova. Paradas prolongadas são registradas."
-    );
-    holdVeilFor("idle", "Tela protegida");
-  }, Config.MOUSE_IDLE_MS);
-}
-
-function handleMouseActivity() {
-  resetIdleTimer();
 }
 
 function isPrintScreen(event) {
@@ -121,8 +102,6 @@ export const SecureModeView = Object.freeze({
     attach("keyup", document, handleKeyUp, true);
     attach("mouseout", document, detectMouseLeave);
     attach("mouseover", document, detectMouseReturn);
-    attach("mousemove", document, handleMouseActivity);
-    attach("mousedown", document, handleMouseActivity);
     attach("blur", window, detectFocusLoss);
     attach("focus", window, detectFocusGain);
     attach("visibilitychange", document, detectVisibilityChange);
@@ -131,13 +110,10 @@ export const SecureModeView = Object.freeze({
     attach("paste", document, prevent, true);
     attach("cut", document, prevent, true);
     attach("dragstart", document, prevent, true);
-    resetIdleTimer();
     requestFullscreen();
   },
 
   exit() {
-    clearTimeout(idleTimerId);
-    idleTimerId = null;
     veilReasons = new Set();
     listeners.forEach(({ name, target, handler, options }) =>
       target.removeEventListener(name, handler, options)
