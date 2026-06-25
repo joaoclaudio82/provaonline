@@ -23,8 +23,8 @@ def require_professor(x_professor_password: str = Header(default="")) -> None:
             detail=(
                 "Senha do professor não configurada no servidor. "
                 f"Variáveis no ambiente: {env_status}. "
-                "No Railway, adicione PROFESSOR_PASSWORD com valor literal no serviço "
-                "provaonline (não só em Shared Variables) e faça redeploy."
+                "No Railway, use PROVA_ADMIN_SECRET (sem a palavra PASSWORD no nome) "
+                "com valor literal no serviço provaonline e faça redeploy."
             ),
         )
     expected = resolve_professor_password()

@@ -6,12 +6,23 @@ from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _DEFAULT_PROFESSOR_PASSWORD = "troque-esta-senha"
+# Railway injeta referências (${{Postgres...}}) mas pode ignorar chaves com "PASSWORD".
+_PROFESSOR_SECRET_ENV_KEYS = (
+    "PROVA_ADMIN_SECRET",
+    "ADMIN_SECRET",
+    "PROFESSOR_SECRET",
+)
 _PROFESSOR_PASSWORD_ENV_KEYS = (
     "PROFESSOR_PASSWORD",
     "PROFESSOR_PASS",
     "ADMIN_PASSWORD",
 )
 _PROFESSOR_PASSWORD_B64_KEY = "PROFESSOR_PASSWORD_B64"
+_ALL_PROFESSOR_ENV_KEYS = (
+    *_PROFESSOR_SECRET_ENV_KEYS,
+    _PROFESSOR_PASSWORD_B64_KEY,
+    *_PROFESSOR_PASSWORD_ENV_KEYS,
+)
 
 
 def normalize_professor_password(value: object) -> str:
@@ -58,9 +69,7 @@ class Settings(BaseSettings):
 
 def professor_password_env_status() -> dict[str, bool]:
     """Indica quais chaves de senha existem no ambiente (sem expor valores)."""
-    status = {key: key in os.environ for key in _PROFESSOR_PASSWORD_ENV_KEYS}
-    status[_PROFESSOR_PASSWORD_B64_KEY] = _PROFESSOR_PASSWORD_B64_KEY in os.environ
-    return status
+    return {key: key in os.environ for key in _ALL_PROFESSOR_ENV_KEYS}
 
 
 def _password_from_env_value(key: str, raw: str) -> str:
@@ -81,7 +90,7 @@ def resolve_professor_password() -> str:
         if password:
             return password
 
-    for key in _PROFESSOR_PASSWORD_ENV_KEYS:
+    for key in (*_PROFESSOR_SECRET_ENV_KEYS, *_PROFESSOR_PASSWORD_ENV_KEYS):
         env_raw = os.environ.get(key)
         if env_raw is not None and str(env_raw).strip():
             return _password_from_env_value(key, env_raw)

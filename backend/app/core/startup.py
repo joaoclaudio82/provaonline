@@ -33,8 +33,8 @@ def initialize_database(max_attempts: int = 30, delay_seconds: float = 2.0) -> N
     else:
         logger.warning(
             "Senha do professor ausente ou inválida (env=%s, DATABASE_URL=%s, "
-            "tamanho_PROFESSOR_PASSWORD=%s). No Railway, crie a variável direto "
-            "no serviço (não só em Shared Variables) e redeploy.",
+            "tamanho_PROFESSOR_PASSWORD=%s). No Railway, use PROVA_ADMIN_SECRET "
+            "(sem PASSWORD no nome da variável) e redeploy.",
             env_status,
             database_present,
             env_length,

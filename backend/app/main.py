@@ -43,8 +43,9 @@ def health() -> dict:
     env_keys = sorted(
         key
         for key in os.environ
-        if key.startswith(("RAILWAY_", "PORT", "DATABASE"))
+        if key.startswith(("RAILWAY_", "PORT", "DATABASE", "PROVA_", "ADMIN_"))
         or "PASSWORD" in key
+        or "SECRET" in key
         or key in professor_password_env_status()
     )
     return {
