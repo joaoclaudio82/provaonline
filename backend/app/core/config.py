@@ -1,3 +1,4 @@
+import base64
 import os
 from functools import lru_cache
 
@@ -10,6 +11,7 @@ _PROFESSOR_PASSWORD_ENV_KEYS = (
     "PROFESSOR_PASS",
     "ADMIN_PASSWORD",
 )
+_PROFESSOR_PASSWORD_B64_KEY = "PROFESSOR_PASSWORD_B64"
 
 
 def normalize_professor_password(value: object) -> str:
@@ -56,15 +58,33 @@ class Settings(BaseSettings):
 
 def professor_password_env_status() -> dict[str, bool]:
     """Indica quais chaves de senha existem no ambiente (sem expor valores)."""
-    return {key: key in os.environ for key in _PROFESSOR_PASSWORD_ENV_KEYS}
+    status = {key: key in os.environ for key in _PROFESSOR_PASSWORD_ENV_KEYS}
+    status[_PROFESSOR_PASSWORD_B64_KEY] = _PROFESSOR_PASSWORD_B64_KEY in os.environ
+    return status
+
+
+def _password_from_env_value(key: str, raw: str) -> str:
+    if key == _PROFESSOR_PASSWORD_B64_KEY:
+        try:
+            decoded = base64.b64decode(raw.strip(), validate=True).decode("utf-8")
+        except (ValueError, UnicodeDecodeError):
+            return ""
+        return normalize_professor_password(decoded)
+    return normalize_professor_password(raw)
 
 
 def resolve_professor_password() -> str:
     """Lê a senha do professor das variáveis de ambiente conhecidas."""
+    b64_raw = os.environ.get(_PROFESSOR_PASSWORD_B64_KEY)
+    if b64_raw is not None and str(b64_raw).strip():
+        password = _password_from_env_value(_PROFESSOR_PASSWORD_B64_KEY, b64_raw)
+        if password:
+            return password
+
     for key in _PROFESSOR_PASSWORD_ENV_KEYS:
         env_raw = os.environ.get(key)
         if env_raw is not None and str(env_raw).strip():
-            return normalize_professor_password(env_raw)
+            return _password_from_env_value(key, env_raw)
     return get_settings().professor_password
 
 
