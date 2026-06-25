@@ -1,9 +1,19 @@
+import os
 from functools import lru_cache
 
-from pydantic import Field, field_validator
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _DEFAULT_PROFESSOR_PASSWORD = "troque-esta-senha"
+
+
+def normalize_professor_password(value: object) -> str:
+    if value is None:
+        return _DEFAULT_PROFESSOR_PASSWORD
+    text = str(value).strip()
+    if len(text) >= 2 and text[0] == text[-1] and text[0] in {'"', "'"}:
+        text = text[1:-1].strip()
+    return text
 
 
 class Settings(BaseSettings):
@@ -13,17 +23,13 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore",
-        populate_by_name=True,
     )
 
     # Banco de dados
     database_url: str = "postgresql+psycopg://prova:prova@db:5432/prova"
 
-    # Senha única do professor (área de administração)
-    professor_password: str = Field(
-        default=_DEFAULT_PROFESSOR_PASSWORD,
-        validation_alias="PROFESSOR_PASSWORD",
-    )
+    # Senha única do professor (lida de PROFESSOR_PASSWORD via pydantic-settings).
+    professor_password: str = _DEFAULT_PROFESSOR_PASSWORD
 
     # Origem permitida para o front (CORS). Use "*" só em desenvolvimento.
     cors_origins: str = "*"
@@ -39,17 +45,21 @@ class Settings(BaseSettings):
 
     @field_validator("professor_password", mode="before")
     @classmethod
-    def normalize_professor_password(cls, value: object) -> str:
-        if value is None:
-            return _DEFAULT_PROFESSOR_PASSWORD
-        text = str(value).strip()
-        if len(text) >= 2 and text[0] == text[-1] and text[0] in {'"', "'"}:
-            text = text[1:-1].strip()
-        return text
+    def normalize_password_field(cls, value: object) -> str:
+        return normalize_professor_password(value)
 
-    def professor_password_is_configured(self) -> bool:
-        password = self.professor_password.strip()
-        return bool(password) and password != _DEFAULT_PROFESSOR_PASSWORD
+
+def resolve_professor_password() -> str:
+    """Prioriza PROFESSOR_PASSWORD do ambiente (Railway/Docker)."""
+    env_raw = os.environ.get("PROFESSOR_PASSWORD")
+    if env_raw is not None:
+        return normalize_professor_password(env_raw)
+    return get_settings().professor_password
+
+
+def professor_password_is_configured() -> bool:
+    password = resolve_professor_password().strip()
+    return bool(password) and password != _DEFAULT_PROFESSOR_PASSWORD
 
 
 @lru_cache
