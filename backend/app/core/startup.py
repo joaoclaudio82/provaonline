@@ -4,6 +4,7 @@ import time
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 
+from app.core.config import get_settings
 from app.core.database import get_db, get_engine
 from app.core.migrations import migrate_schema
 from app.models.entities import Base
@@ -14,6 +15,15 @@ logger = logging.getLogger("uvicorn.error")
 
 def initialize_database(max_attempts: int = 30, delay_seconds: float = 2.0) -> None:
     """Cria tabelas, migra e faz seed. Repete até o PostgreSQL ficar disponível."""
+    settings = get_settings()
+    if settings.professor_password_is_configured():
+        logger.info("PROFESSOR_PASSWORD: configurada.")
+    else:
+        logger.warning(
+            "PROFESSOR_PASSWORD ausente ou inválida. "
+            "Defina a variável no Railway e redeploy antes de usar a área do professor."
+        )
+
     engine = get_engine()
     last_error: Exception | None = None
 

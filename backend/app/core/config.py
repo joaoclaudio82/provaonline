@@ -1,5 +1,6 @@
 from functools import lru_cache
 
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _DEFAULT_PROFESSOR_PASSWORD = "troque-esta-senha"
@@ -8,13 +9,21 @@ _DEFAULT_PROFESSOR_PASSWORD = "troque-esta-senha"
 class Settings(BaseSettings):
     """Configuração da aplicação, lida de variáveis de ambiente (.env)."""
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        populate_by_name=True,
+    )
 
     # Banco de dados
     database_url: str = "postgresql+psycopg://prova:prova@db:5432/prova"
 
     # Senha única do professor (área de administração)
-    professor_password: str = _DEFAULT_PROFESSOR_PASSWORD
+    professor_password: str = Field(
+        default=_DEFAULT_PROFESSOR_PASSWORD,
+        validation_alias="PROFESSOR_PASSWORD",
+    )
 
     # Origem permitida para o front (CORS). Use "*" só em desenvolvimento.
     cors_origins: str = "*"
@@ -27,6 +36,16 @@ class Settings(BaseSettings):
     min_time_minutes: int = 5
     max_time_minutes: int = 300
     max_students: int = 50
+
+    @field_validator("professor_password", mode="before")
+    @classmethod
+    def normalize_professor_password(cls, value: object) -> str:
+        if value is None:
+            return _DEFAULT_PROFESSOR_PASSWORD
+        text = str(value).strip()
+        if len(text) >= 2 and text[0] == text[-1] and text[0] in {'"', "'"}:
+            text = text[1:-1].strip()
+        return text
 
     def professor_password_is_configured(self) -> bool:
         password = self.professor_password.strip()

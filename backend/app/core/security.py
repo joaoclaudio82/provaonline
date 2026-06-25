@@ -16,7 +16,10 @@ def require_professor(x_professor_password: str = Header(default="")) -> None:
     if not settings.professor_password_is_configured():
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Senha do professor não configurada no servidor.",
+            detail=(
+                "Senha do professor não configurada no servidor. "
+                "Defina PROFESSOR_PASSWORD no Railway (valor real, não vazio) e faça redeploy."
+            ),
         )
     expected = settings.professor_password
     provided = x_professor_password or ""
