@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -6,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.core.config import get_settings
+from app.core.config import get_settings, professor_password_env_status, professor_password_is_configured
 from app.core.startup import initialize_database
 from app.routers import admin, exam
 
@@ -39,7 +40,20 @@ app.include_router(admin.router)
 
 @app.get("/api/health", tags=["infra"])
 def health() -> dict:
-    return {"status": "ok"}
+    env_keys = sorted(
+        key
+        for key in os.environ
+        if key.startswith(("RAILWAY_", "PORT", "DATABASE"))
+        or "PASSWORD" in key
+        or key in professor_password_env_status()
+    )
+    return {
+        "status": "ok",
+        "professor_password_configured": professor_password_is_configured(),
+        "professor_password_env": professor_password_env_status(),
+        "database_url_present": "DATABASE_URL" in os.environ,
+        "env_keys_sample": env_keys,
+    }
 
 
 def _mount_frontend() -> None:

@@ -5,6 +5,11 @@ from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _DEFAULT_PROFESSOR_PASSWORD = "troque-esta-senha"
+_PROFESSOR_PASSWORD_ENV_KEYS = (
+    "PROFESSOR_PASSWORD",
+    "PROFESSOR_PASS",
+    "ADMIN_PASSWORD",
+)
 
 
 def normalize_professor_password(value: object) -> str:
@@ -49,11 +54,17 @@ class Settings(BaseSettings):
         return normalize_professor_password(value)
 
 
+def professor_password_env_status() -> dict[str, bool]:
+    """Indica quais chaves de senha existem no ambiente (sem expor valores)."""
+    return {key: key in os.environ for key in _PROFESSOR_PASSWORD_ENV_KEYS}
+
+
 def resolve_professor_password() -> str:
-    """Prioriza PROFESSOR_PASSWORD do ambiente (Railway/Docker)."""
-    env_raw = os.environ.get("PROFESSOR_PASSWORD")
-    if env_raw is not None:
-        return normalize_professor_password(env_raw)
+    """Lê a senha do professor das variáveis de ambiente conhecidas."""
+    for key in _PROFESSOR_PASSWORD_ENV_KEYS:
+        env_raw = os.environ.get(key)
+        if env_raw is not None and str(env_raw).strip():
+            return normalize_professor_password(env_raw)
     return get_settings().professor_password
 
 

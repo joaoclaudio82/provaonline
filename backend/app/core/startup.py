@@ -5,7 +5,12 @@ import time
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 
-from app.core.config import get_settings, professor_password_is_configured, resolve_professor_password
+from app.core.config import (
+    get_settings,
+    professor_password_env_status,
+    professor_password_is_configured,
+    resolve_professor_password,
+)
 from app.core.database import get_db, get_engine
 from app.core.migrations import migrate_schema
 from app.models.entities import Base
@@ -16,19 +21,22 @@ logger = logging.getLogger("uvicorn.error")
 
 def initialize_database(max_attempts: int = 30, delay_seconds: float = 2.0) -> None:
     """Cria tabelas, migra e faz seed. Repete até o PostgreSQL ficar disponível."""
-    env_present = "PROFESSOR_PASSWORD" in os.environ
+    env_status = professor_password_env_status()
     env_length = len(os.environ.get("PROFESSOR_PASSWORD", ""))
+    database_present = "DATABASE_URL" in os.environ
     if professor_password_is_configured():
         logger.info(
-            "PROFESSOR_PASSWORD: configurada (env presente=%s, tamanho=%s).",
-            env_present,
-            env_length,
+            "Senha do professor: configurada (env=%s, DATABASE_URL=%s).",
+            env_status,
+            database_present,
         )
     else:
         logger.warning(
-            "PROFESSOR_PASSWORD ausente ou inválida (env presente=%s, tamanho=%s, "
-            "valor_efetivo=vazio_ou_padrao). Defina no Railway e redeploy.",
-            env_present,
+            "Senha do professor ausente ou inválida (env=%s, DATABASE_URL=%s, "
+            "tamanho_PROFESSOR_PASSWORD=%s). No Railway, crie a variável direto "
+            "no serviço (não só em Shared Variables) e redeploy.",
+            env_status,
+            database_present,
             env_length,
         )
         _ = resolve_professor_password()

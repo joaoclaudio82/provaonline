@@ -1,10 +1,12 @@
-import os
-
 import secrets
 
 from fastapi import Header, HTTPException, status
 
-from app.core.config import professor_password_is_configured, resolve_professor_password
+from app.core.config import (
+    professor_password_env_status,
+    professor_password_is_configured,
+    resolve_professor_password,
+)
 
 
 def require_professor(x_professor_password: str = Header(default="")) -> None:
@@ -15,13 +17,14 @@ def require_professor(x_professor_password: str = Header(default="")) -> None:
     a senha acompanha cada requisição administrativa.
     """
     if not professor_password_is_configured():
-        env_present = "PROFESSOR_PASSWORD" in os.environ
+        env_status = professor_password_env_status()
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=(
                 "Senha do professor não configurada no servidor. "
-                f"Variável PROFESSOR_PASSWORD no ambiente: {'sim' if env_present else 'não'}. "
-                "Defina um valor real no Railway e faça redeploy."
+                f"Variáveis no ambiente: {env_status}. "
+                "No Railway, adicione PROFESSOR_PASSWORD com valor literal no serviço "
+                "provaonline (não só em Shared Variables) e faça redeploy."
             ),
         )
     expected = resolve_professor_password()
