@@ -4,8 +4,13 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import get_settings
+from app.core.db_url import normalize_database_url
 
-_engine = create_engine(get_settings().database_url, pool_pre_ping=True, future=True)
+_engine = create_engine(
+    normalize_database_url(get_settings().database_url),
+    pool_pre_ping=True,
+    future=True,
+)
 _SessionLocal = sessionmaker(bind=_engine, autoflush=False, autocommit=False, future=True)
 
 

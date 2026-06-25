@@ -50,6 +50,16 @@ Use o `Dockerfile` na raiz do repositório (FastAPI + front + PostgreSQL):
 A área do professor só abre após validar a senha contra a API; sem
 `PROFESSOR_PASSWORD` configurada, os endpoints administrativos retornam erro 503.
 
+**Checklist se o deploy falhar no healthcheck (`/api/health`):**
+
+1. O serviço da app usa **Builder: Dockerfile** (não Static Site / Railpack).
+2. Existe um serviço **PostgreSQL** no mesmo projeto.
+3. No serviço da app, em **Variables**, existe `DATABASE_URL` referenciando o
+   Postgres (ex.: `${{Postgres.DATABASE_URL}}` ou variável compartilhada).
+4. Existe `PROFESSOR_PASSWORD` definida.
+5. Veja os **Deploy Logs** — se aparecer erro de conexão ao banco, o app só sobe
+   depois que o PostgreSQL estiver acessível.
+
 ## Como usar
 
 1. Abra o front. A tela de regras aparece primeiro; o estudante precisa aceitar.

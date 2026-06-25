@@ -7,27 +7,15 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.core.config import get_settings
-from app.core.database import get_engine, get_db
-from app.core.migrations import migrate_schema
-from app.models.entities import Base
+from app.core.startup import initialize_database
 from app.routers import admin, exam
-from app.services import seed
 
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Cria as tabelas (idempotente) e popula o banco de questões e a config padrão.
-    engine = get_engine()
-    Base.metadata.create_all(bind=engine)
-    migrate_schema(engine)
-    db = next(get_db())
-    try:
-        seed.seed_questions(db)
-        seed.ensure_config(db)
-    finally:
-        db.close()
+    initialize_database()
     yield
 
 
