@@ -1,7 +1,17 @@
 // Constantes de interface usadas pelo front. Parâmetros da prova (nº de questões,
 // tempo, limites) vêm do backend; aqui ficam só ajustes de apresentação.
+function resolveApiBase() {
+  if (typeof window === "undefined") return "http://localhost:8000";
+  const { hostname, origin, port } = window.location;
+  // Docker local: front nginx em 8080/8081 e API em 8000/8001.
+  if (port === "8080") return `http://${hostname}:8000`;
+  if (port === "8081") return `http://${hostname}:8001`;
+  // Produção (Railway etc.): front e API no mesmo host.
+  return origin;
+}
+
 export const Config = Object.freeze({
-  API_BASE: "http://localhost:8001",
+  API_BASE: resolveApiBase(),
   LOW_TIME_THRESHOLD_SECONDS: 300,
   OPTION_LETTERS: ["A", "B", "C", "D", "E"],
   BLUR_HOLD_MS: 1200,

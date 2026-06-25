@@ -2,6 +2,8 @@ from functools import lru_cache
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+_DEFAULT_PROFESSOR_PASSWORD = "troque-esta-senha"
+
 
 class Settings(BaseSettings):
     """Configuração da aplicação, lida de variáveis de ambiente (.env)."""
@@ -12,7 +14,7 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://prova:prova@db:5432/prova"
 
     # Senha única do professor (área de administração)
-    professor_password: str = "troque-esta-senha"
+    professor_password: str = _DEFAULT_PROFESSOR_PASSWORD
 
     # Origem permitida para o front (CORS). Use "*" só em desenvolvimento.
     cors_origins: str = "*"
@@ -25,6 +27,10 @@ class Settings(BaseSettings):
     min_time_minutes: int = 5
     max_time_minutes: int = 300
     max_students: int = 50
+
+    def professor_password_is_configured(self) -> bool:
+        password = self.professor_password.strip()
+        return bool(password) and password != _DEFAULT_PROFESSOR_PASSWORD
 
 
 @lru_cache

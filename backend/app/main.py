@@ -1,13 +1,18 @@
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.core.config import get_settings
 from app.core.database import get_engine, get_db
 from app.models.entities import Base
 from app.routers import admin, exam
 from app.services import seed
+
+FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
 
 
 @asynccontextmanager
@@ -44,3 +49,24 @@ app.include_router(admin.router)
 @app.get("/api/health", tags=["infra"])
 def health() -> dict:
     return {"status": "ok"}
+
+
+def _mount_frontend() -> None:
+    if not FRONTEND_DIR.is_dir():
+        return
+
+    styles_dir = FRONTEND_DIR / "styles"
+    src_dir = FRONTEND_DIR / "src"
+    if styles_dir.is_dir():
+        app.mount("/styles", StaticFiles(directory=styles_dir), name="frontend-styles")
+    if src_dir.is_dir():
+        app.mount("/src", StaticFiles(directory=src_dir), name="frontend-src")
+
+    index_file = FRONTEND_DIR / "index.html"
+
+    @app.get("/", include_in_schema=False)
+    def serve_index() -> FileResponse:
+        return FileResponse(index_file)
+
+
+_mount_frontend()

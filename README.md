@@ -29,9 +29,26 @@ docker compose up --build
 
 Na primeira subida, o backend cria as tabelas e popula o banco de questões.
 
-> O front, por padrão, chama a API no mesmo host. Servindo o front em :8080 e a
-> API em :8000, ajuste `API_BASE` em `frontend/src/config/Config.js` para
-> "http://localhost:8000", ou coloque um proxy reverso na frente dos dois.
+> O front detecta automaticamente a URL da API: em Docker local (front :8080/:8081)
+> usa a API em :8000/:8001; em produção (mesmo domínio) usa a origem atual.
+
+## Deploy no Railway
+
+**Não publique a pasta raiz como site estático.** Isso serve a versão standalone
+(`index.html` + `src/`), que **não tem senha de professor** e expõe o gabarito no
+navegador.
+
+Use o `Dockerfile` na raiz do repositório (FastAPI + front + PostgreSQL):
+
+1. Crie um serviço **Docker** apontando para este repositório (o `railway.toml` já
+   referencia o `Dockerfile` da raiz).
+2. Adicione o plugin **PostgreSQL** e vincule `DATABASE_URL` ao serviço da API.
+3. Defina a variável **`PROFESSOR_PASSWORD`** com uma senha forte (obrigatória).
+4. Faça redeploy. A aplicação ficará em um único domínio, ex.:
+   `https://provaonline-production.up.railway.app`
+
+A área do professor só abre após validar a senha contra a API; sem
+`PROFESSOR_PASSWORD` configurada, os endpoints administrativos retornam erro 503.
 
 ## Como usar
 
