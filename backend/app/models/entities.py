@@ -47,6 +47,7 @@ class Student(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     login: Mapped[str] = mapped_column(String(120), unique=True, nullable=False, index=True)
     password: Mapped[str] = mapped_column(String(120), nullable=False)
+    allow_retake: Mapped[bool] = mapped_column(Boolean, default=False)
 
     session: Mapped["ExamSession"] = relationship(back_populates="student", uselist=False)
 
@@ -59,6 +60,7 @@ class ExamConfig(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, default=1)
     question_count: Mapped[int] = mapped_column(Integer, nullable=False)
     time_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
+    allow_retake_all: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
 class ExamSession(Base):

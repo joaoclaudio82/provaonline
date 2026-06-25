@@ -65,10 +65,30 @@
     </div>
     <div class="err" id="cfg-err"></div>
     <p class="hint" id="cfg-current"></p>
+    <label class="accept" style="margin-top:14px">
+      <input type="checkbox" id="cfg-allow-retake-all">
+      <span>Permitir que <strong>todos</strong> os alunos refaçam a prova após enviar</span>
+    </label>
 
     <div class="rule"></div>
     <h2>2. Lista de estudantes</h2>
-    <p class="hint">Importe um CSV com duas colunas <span class="pill">login,senha</span> (cabeçalho opcional, até 50 linhas). Ex.: <span class="pill">exemplos/estudantes_turma.csv</span>.</p>
+    <p class="hint">Importe um CSV, adicione alunos manualmente ou edite login/senha abaixo. Marque <span class="pill">Refazer</span> para liberar um aluno específico.</p>
+    <div class="row" style="margin-top:14px; align-items:flex-end; gap:12px; flex-wrap:wrap">
+      <div class="field" style="margin-bottom:0; min-width:160px">
+        <label for="new-student-login">Login</label>
+        <input type="text" id="new-student-login" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="field" style="margin-bottom:0; min-width:160px">
+        <label for="new-student-senha">Senha</label>
+        <input type="text" id="new-student-senha" autocomplete="off" spellcheck="false">
+      </div>
+      <label class="accept" style="margin-bottom:12px">
+        <input type="checkbox" id="new-student-retake">
+        <span>Liberar refazer</span>
+      </label>
+      <button class="btn alt" id="btn-add-student" type="button">Adicionar aluno</button>
+    </div>
+    <div class="err" id="add-student-err"></div>
     <div class="row" style="margin-top:14px; align-items:center; gap:12px">
       <button class="btn" id="btn-pick-csv">Importar turma (CSV)</button>
       <input type="file" id="csv-input" accept=".csv,text/csv" class="hide">
@@ -183,6 +203,29 @@
     <div class="rule"></div>
     <button class="btn alt" id="btn-done-back">Sair</button>
   </div></div>
+</div>
+
+<div class="overlay" id="student-edit-overlay">
+  <div class="inner prof-dialog">
+    <h2>Editar estudante</h2>
+    <div class="field prof-field">
+      <label for="edit-student-login">Login</label>
+      <input type="text" id="edit-student-login" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field prof-field">
+      <label for="edit-student-senha">Senha</label>
+      <input type="text" id="edit-student-senha" autocomplete="off" spellcheck="false">
+    </div>
+    <label class="accept prof-field">
+      <input type="checkbox" id="edit-student-retake">
+      <span>Liberar refazer a prova</span>
+    </label>
+    <div class="err prof-err" id="edit-student-err"></div>
+    <div class="row prof-actions">
+      <button class="btn" id="edit-student-save" type="button">Salvar</button>
+      <button class="btn alt" id="edit-student-cancel" type="button">Cancelar</button>
+    </div>
+  </div>
 </div>
 
 <div class="overlay" id="prof-overlay">

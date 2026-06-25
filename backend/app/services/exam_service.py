@@ -35,10 +35,36 @@ def _build_layout(db: Session, question_count: int) -> list[dict]:
     return layout
 
 
+def can_retake(db: Session, student: Student) -> bool:
+    config = db.get(ExamConfig, 1)
+    if config is not None and config.allow_retake_all:
+        return True
+    return student.allow_retake
+
+
+def reset_session_for_retake(db: Session, student: Student) -> None:
+    session = db.scalar(select(ExamSession).where(ExamSession.student_id == student.id))
+    if session is None:
+        return
+    result = db.scalar(select(Result).where(Result.session_id == session.id))
+    if result is not None:
+        db.delete(result)
+    db.delete(session)
+    db.commit()
+    db.expire(student, ["session"])
+
+
 def get_or_create_session(db: Session, student: Student) -> tuple[ExamSession, bool]:
     """Devolve a prova do aluno. Se ainda não existir, sorteia e cria.
-    O segundo valor indica se a prova já foi enviada."""
+    O segundo valor indica se a prova já foi enviada e não pode ser refeita."""
     session = db.scalar(select(ExamSession).where(ExamSession.student_id == student.id))
+    if session is not None and session.submitted:
+        if can_retake(db, student):
+            reset_session_for_retake(db, student)
+            session = None
+        else:
+            return session, True
+
     if session is None:
         config = db.get(ExamConfig, 1)
         layout = _build_layout(db, config.question_count)
@@ -50,7 +76,7 @@ def get_or_create_session(db: Session, student: Student) -> tuple[ExamSession, b
         db.add(session)
         db.commit()
         db.refresh(session)
-    return session, session.submitted
+    return session, False
 
 
 def render_exam_for_student(db: Session, session: ExamSession) -> list[dict]:

@@ -58,11 +58,13 @@ class ResultOut(BaseModel):
 class ConfigIn(BaseModel):
     question_count: int = Field(..., ge=1)
     time_minutes: int = Field(..., ge=1)
+    allow_retake_all: bool = False
 
 
 class ConfigOut(BaseModel):
     question_count: int
     time_minutes: int
+    allow_retake_all: bool
     max_question_count: int
     min_question_count: int
     min_time_minutes: int
@@ -78,13 +80,33 @@ class StudentCredential(BaseModel):
     senha: str
 
 
+class StudentRow(BaseModel):
+    id: int
+    login: str
+    senha: str
+    allow_retake: bool
+    exam_status: str
+
+
+class StudentIn(BaseModel):
+    login: str = Field(..., min_length=1)
+    senha: str = Field(..., min_length=1)
+    allow_retake: bool = False
+
+
+class StudentUpdateIn(BaseModel):
+    login: str = Field(..., min_length=1)
+    senha: str = Field(..., min_length=1)
+    allow_retake: bool = False
+
+
 class RosterGenerateIn(BaseModel):
     count: int = Field(..., ge=1)
 
 
 class RosterGenerateOut(BaseModel):
     loaded: int
-    students: list[StudentCredential]
+    students: list[StudentRow]
 
 
 class ResultRow(BaseModel):

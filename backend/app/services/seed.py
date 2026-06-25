@@ -55,6 +55,7 @@ def ensure_config(db: Session) -> ExamConfig:
             id=1,
             question_count=settings.default_question_count,
             time_minutes=settings.default_time_minutes,
+            allow_retake_all=False,
         )
         db.add(config)
         db.commit()

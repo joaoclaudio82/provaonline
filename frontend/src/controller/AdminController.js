@@ -29,6 +29,10 @@ export class AdminController {
       onGenerateRoster: () => this.#handleGenerateRoster(),
       onDownloadRoster: () => this.#handleDownloadRoster(),
       onManageQuestions: () => this.#questionsController.open(),
+      onAddStudent: () => this.#handleAddStudent(),
+      onEditStudent: (studentId) => this.#handleEditStudent(studentId),
+      onSaveStudentEdit: () => this.#handleSaveStudentEdit(),
+      onCancelStudentEdit: () => AdminView.closeStudentEditor(),
     });
     GabaritoView.bind({ onBack: () => this.#showAdmin() });
   }
@@ -72,7 +76,7 @@ export class AdminController {
     AdminView.setDownloadRosterEnabled(students.length > 0);
     AdminView.setRosterStatus(
       students.length > 0
-        ? `${students.length} estudante(s) cadastrado(s). Distribua a lista antes da prova.`
+        ? `${students.length} estudante(s) cadastrado(s). Edite login, senha ou libere refazer individualmente.`
         : "Nenhuma turma carregada."
     );
   }
@@ -119,12 +123,52 @@ export class AdminController {
 
   async #handleSaveConfig() {
     AdminView.clearConfigError();
-    const { questionCount, timeMinutes } = AdminView.readConfig();
+    const { questionCount, timeMinutes, allowRetakeAll } = AdminView.readConfig();
     try {
-      const config = await ApiClient.updateConfig(this.#password, questionCount, timeMinutes);
+      const config = await ApiClient.updateConfig(this.#password, questionCount, timeMinutes, allowRetakeAll);
       AdminView.renderConfig(config);
     } catch (error) {
       AdminView.showConfigError(error.message);
+    }
+  }
+
+  async #handleAddStudent() {
+    AdminView.showAddStudentError("");
+    const { login, senha, allowRetake } = AdminView.readNewStudent();
+    if (!login || !senha) {
+      return AdminView.showAddStudentError("Informe login e senha.");
+    }
+    try {
+      await ApiClient.createStudent(this.#password, { login, senha, allow_retake: allowRetake });
+      AdminView.clearNewStudentForm();
+      await this.#refreshRoster();
+    } catch (error) {
+      AdminView.showAddStudentError(error.message);
+    }
+  }
+
+  #handleEditStudent(studentId) {
+    const student = this.#roster.find((item) => item.id === studentId);
+    if (!student) return;
+    AdminView.openStudentEditor(student);
+  }
+
+  async #handleSaveStudentEdit() {
+    AdminView.showStudentEditError("");
+    const { studentId, login, senha, allowRetake } = AdminView.readStudentEditor();
+    if (!login || !senha) {
+      return AdminView.showStudentEditError("Informe login e senha.");
+    }
+    try {
+      await ApiClient.updateStudent(this.#password, studentId, {
+        login,
+        senha,
+        allow_retake: allowRetake,
+      });
+      AdminView.closeStudentEditor();
+      await this.#refreshRoster();
+    } catch (error) {
+      AdminView.showStudentEditError(error.message);
     }
   }
 
@@ -147,7 +191,6 @@ export class AdminController {
   }
 
   #handleExport() {
-    // O download exige a senha no cabeçalho; baixamos via fetch e geramos um blob.
     ApiClient.listResults(this.#password)
       .then(() => fetch(ApiClient.resultsCsvUrl(), { headers: { "X-Professor-Password": this.#password } }))
       .then((response) => {

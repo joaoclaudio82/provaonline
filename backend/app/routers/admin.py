@@ -16,7 +16,9 @@ from app.schemas.dto import (
     RosterGenerateIn,
     RosterGenerateOut,
     RosterUploadOut,
-    StudentCredential,
+    StudentIn,
+    StudentRow,
+    StudentUpdateIn,
 )
 from app.services import exam_service, question_service, roster_service, seed
 
@@ -34,6 +36,7 @@ def _config_out(db: Session) -> ConfigOut:
     return ConfigOut(
         question_count=config.question_count,
         time_minutes=config.time_minutes,
+        allow_retake_all=config.allow_retake_all,
         max_question_count=min(bank_size, settings.max_question_count),
         min_question_count=settings.min_question_count,
         min_time_minutes=settings.min_time_minutes,
@@ -63,6 +66,7 @@ def update_config(payload: ConfigIn, db: Session = Depends(get_db)) -> ConfigOut
     config = seed.ensure_config(db)
     config.question_count = payload.question_count
     config.time_minutes = payload.time_minutes
+    config.allow_retake_all = payload.allow_retake_all
     db.commit()
     return _config_out(db)
 
@@ -77,9 +81,45 @@ async def upload_roster(file: UploadFile, db: Session = Depends(get_db)) -> Rost
     return RosterUploadOut(loaded=loaded)
 
 
-@router.get("/roster", response_model=list[StudentCredential])
-def get_roster(db: Session = Depends(get_db)) -> list[StudentCredential]:
-    return [StudentCredential(login=login, senha=senha) for login, senha in roster_service.list_roster(db)]
+@router.get("/roster", response_model=list[StudentRow])
+def get_roster(db: Session = Depends(get_db)) -> list[StudentRow]:
+    return [StudentRow(**row) for row in roster_service.list_roster_rows(db)]
+
+
+@router.post("/students", response_model=StudentRow, status_code=status.HTTP_201_CREATED)
+def create_student(payload: StudentIn, db: Session = Depends(get_db)) -> StudentRow:
+    try:
+        student = roster_service.create_student(
+            db,
+            login=payload.login,
+            senha=payload.senha,
+            allow_retake=payload.allow_retake,
+        )
+    except ValueError as error:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, str(error)) from error
+    rows = roster_service.list_roster_rows(db)
+    row = next(item for item in rows if item["id"] == student.id)
+    return StudentRow(**row)
+
+
+@router.put("/students/{student_id}", response_model=StudentRow)
+def update_student(
+    student_id: int, payload: StudentUpdateIn, db: Session = Depends(get_db)
+) -> StudentRow:
+    try:
+        roster_service.update_student(
+            db,
+            student_id,
+            login=payload.login,
+            senha=payload.senha,
+            allow_retake=payload.allow_retake,
+        )
+    except LookupError as error:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, str(error)) from error
+    row = next(item for item in roster_service.list_roster_rows(db) if item["id"] == student_id)
+    return StudentRow(**row)
 
 
 @router.post("/roster/generate", response_model=RosterGenerateOut)
@@ -95,7 +135,10 @@ def generate_roster(payload: RosterGenerateIn, db: Session = Depends(get_db)) ->
     except ValueError as error:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, str(error)) from error
     loaded = roster_service.replace_roster(db, pairs)
-    students = [StudentCredential(login=login, senha=senha) for login, senha in pairs]
+    students = [
+        StudentRow(**row)
+        for row in roster_service.list_roster_rows(db)
+    ]
     return RosterGenerateOut(loaded=loaded, students=students)
 
 

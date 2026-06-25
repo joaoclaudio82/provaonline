@@ -39,11 +39,15 @@ export const ApiClient = Object.freeze({
   getConfig(password) {
     return request("/api/admin/config", { professorPassword: password });
   },
-  updateConfig(password, questionCount, timeMinutes) {
+  updateConfig(password, questionCount, timeMinutes, allowRetakeAll = false) {
     return request("/api/admin/config", {
       method: "PUT",
       professorPassword: password,
-      body: { question_count: questionCount, time_minutes: timeMinutes },
+      body: {
+        question_count: questionCount,
+        time_minutes: timeMinutes,
+        allow_retake_all: allowRetakeAll,
+      },
     });
   },
   uploadRoster(password, file) {
@@ -53,6 +57,20 @@ export const ApiClient = Object.freeze({
   },
   listRoster(password) {
     return request("/api/admin/roster", { professorPassword: password });
+  },
+  createStudent(password, body) {
+    return request("/api/admin/students", {
+      method: "POST",
+      professorPassword: password,
+      body,
+    });
+  },
+  updateStudent(password, studentId, body) {
+    return request(`/api/admin/students/${studentId}`, {
+      method: "PUT",
+      professorPassword: password,
+      body,
+    });
   },
   generateRoster(password, count) {
     return request("/api/admin/roster/generate", {

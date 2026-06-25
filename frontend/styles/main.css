@@ -78,6 +78,11 @@ th{background:var(--soft); font-family:"DejaVu Sans Mono",monospace; font-size:1
   letter-spacing:.1em; text-transform:uppercase}
 .pill{display:inline-block; font-family:"DejaVu Sans Mono",monospace; font-size:11px;
   padding:3px 9px; background:var(--soft); letter-spacing:.08em}
+.pill.ok{background:#eef4f0; color:var(--accent)}
+.pill.wait{background:#fff6e6; color:#8a5a00}
+.pill.done{background:#f0eef4; color:#4a3d6b}
+.btn.sm{padding:8px 12px; font-size:11px}
+.roster-actions{display:flex; gap:8px; flex-wrap:wrap}
 .hide{display:none!important}
 .scorebig{font-size:54px; font-weight:700; color:var(--accent); letter-spacing:-.02em}
 
