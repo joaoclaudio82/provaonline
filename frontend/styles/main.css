@@ -45,7 +45,8 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent); outline
 .timer.low{color:#ffd2c2}
 .examwrap{height:100vh; padding:56px 24px 84px; overflow:auto}
 .qcard{background:#fffdf7; border:1px solid var(--line); width:min(820px,100%);
-  margin:0 auto 20px; padding:30px 34px}
+  margin:0 auto 20px; padding:30px 34px; transition:filter .25s ease, opacity .25s ease}
+.qcard:not(.qcard-active){filter:blur(10px); opacity:.45; pointer-events:none; user-select:none}
 .qnum{font-family:"DejaVu Sans Mono",monospace; font-size:11px; letter-spacing:.22em;
   text-transform:uppercase; color:var(--accent2); margin-bottom:12px}
 .qtext{font-size:18px; line-height:1.45; margin-bottom:20px}

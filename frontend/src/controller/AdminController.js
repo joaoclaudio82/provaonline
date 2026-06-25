@@ -129,15 +129,20 @@ export class AdminController {
   }
 
   async #handleCsvSelected(event) {
-    const file = event.target.files[0];
+    const input = event.target;
+    const file = input.files[0];
     if (!file) return;
+    AdminView.clearRosterError();
     try {
       const { loaded } = await ApiClient.uploadRoster(this.#password, file);
-      AdminView.setCsvStatus(`${loaded} estudantes carregados`);
+      AdminView.setCsvStatus(`${file.name} · ${loaded} estudante(s)`);
       await this.#refreshRoster();
       await this.#refreshResults();
     } catch (error) {
-      AdminView.setCsvStatus("Falha: " + error.message);
+      AdminView.setCsvStatus("Falha na importação");
+      AdminView.showRosterError(error.message);
+    } finally {
+      input.value = "";
     }
   }
 

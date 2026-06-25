@@ -149,6 +149,13 @@ def update_question(
     return _question_admin(question)
 
 
+@router.post("/questions/reload", response_model=dict)
+def reload_questions(db: Session = Depends(get_db)) -> dict:
+    """Recarrega o banco de questões a partir do arquivo JSON do servidor."""
+    total = seed.reload_questions(db)
+    return {"reloaded": total}
+
+
 @router.delete("/questions/{question_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_question(question_id: int, db: Session = Depends(get_db)) -> None:
     try:

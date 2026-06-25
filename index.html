@@ -68,13 +68,14 @@
 
     <div class="rule"></div>
     <h2>2. Lista de estudantes</h2>
-    <p class="hint">Formato do CSV: duas colunas <span class="pill">login,senha</span>, uma linha por estudante (até 40). Cabeçalho opcional.</p>
-    <div class="field" style="margin-top:14px">
-      <button class="btn alt" id="btn-pick-csv">Selecionar arquivo CSV</button>
+    <p class="hint">Importe um CSV com duas colunas <span class="pill">login,senha</span> (cabeçalho opcional, até 50 linhas). Ex.: <span class="pill">exemplos/estudantes_turma.csv</span>.</p>
+    <div class="row" style="margin-top:14px; align-items:center; gap:12px">
+      <button class="btn" id="btn-pick-csv">Importar turma (CSV)</button>
       <input type="file" id="csv-input" accept=".csv,text/csv" class="hide">
-      <span class="pill" id="csv-status" style="margin-left:10px">nenhum arquivo</span>
+      <span class="pill" id="csv-status">nenhum arquivo importado</span>
     </div>
-    <p class="hint">Sem arquivo, o sistema usa uma lista de teste (<span class="pill">aluno01 / 123</span> … <span class="pill">aluno40 / 123</span>).</p>
+    <p class="hint" id="roster-status">Nenhuma turma carregada. Sem importação, o sistema usa uma lista de teste (<span class="pill">aluno01 / 123</span> …).</p>
+    <div id="roster-box"></div>
     <div class="rule"></div>
     <h2>3. Gabarito e resultados</h2>
     <p class="hint">O gabarito comentado fica só aqui. Os resultados aparecem conforme os estudantes finalizam.</p>

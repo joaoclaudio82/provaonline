@@ -77,6 +77,7 @@ export class ExamController {
     this.#model.isFinished = true;
     clearInterval(this.#clockTimerId);
     SecureModeView.exit();
+    ExamView.stopVisibilityTracking();
     AntiCaptureView.releaseVeil();
     AntiCaptureView.hideWatermark();
 

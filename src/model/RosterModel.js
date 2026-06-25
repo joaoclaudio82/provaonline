@@ -34,4 +34,8 @@ export class RosterModel {
   authenticate(login, senha) {
     return this.#students.find((s) => s.login === login && s.senha === senha) || null;
   }
+
+  list() {
+    return this.#students.map((s) => ({ login: s.login, senha: s.senha }));
+  }
 }

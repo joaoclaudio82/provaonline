@@ -70,4 +70,24 @@ export const AdminView = Object.freeze({
       .join("");
     box.innerHTML = `<table><thead>${head}</thead><tbody>${rows}</tbody></table>`;
   },
+
+  setRosterStatus(message) {
+    document.getElementById("roster-status").textContent = message;
+  },
+
+  renderRosterTable(students) {
+    const box = document.getElementById("roster-box");
+    if (!students || students.length === 0) {
+      box.innerHTML = "";
+      return;
+    }
+    const head = "<tr><th>Login</th><th>Senha</th></tr>";
+    const body = students
+      .map(
+        (student) =>
+          `<tr><td>${Utils.escapeHtml(student.login)}</td><td>${Utils.escapeHtml(student.senha)}</td></tr>`
+      )
+      .join("");
+    box.innerHTML = `<table><thead>${head}</thead><tbody>${body}</tbody></table>`;
+  },
 });

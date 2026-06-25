@@ -1,5 +1,7 @@
+import { Config } from "../config/Config.js";
+
 // Travas de tela do modo seguro: bloqueio de teclado, detecção de saída do mouse,
-// perda de foco, troca de aba e tentativa de PrintScreen, mais o overlay de advertência.
+// perda de foco, troca de aba, mouse parado e tentativa de PrintScreen, mais o overlay de advertência.
 //
 // Aviso honesto: o navegador NÃO consegue bloquear o print screen do sistema nem uma
 // foto de celular. A tecla PrintScreen chega ao JavaScript apenas em alguns
@@ -11,6 +13,41 @@ let onVeilHold = null;    // (message) -> cobre a tela enquanto a condição dur
 let onVeilFlash = null;   // (message) -> cobre a tela por um instante
 let onVeilRelease = null; // () -> libera a tela
 let listeners = [];
+let veilReasons = new Set();
+let veilMessage = "Tela protegida";
+let idleTimerId = null;
+
+function syncVeil() {
+  if (veilReasons.size > 0) onVeilHold(veilMessage);
+  else onVeilRelease();
+}
+
+function holdVeilFor(reason, message) {
+  veilReasons.add(reason);
+  veilMessage = message;
+  syncVeil();
+}
+
+function releaseVeilFor(reason) {
+  veilReasons.delete(reason);
+  syncVeil();
+}
+
+function resetIdleTimer() {
+  clearTimeout(idleTimerId);
+  releaseVeilFor("idle");
+  idleTimerId = setTimeout(() => {
+    onViolation(
+      "Mouse parado",
+      "Mantenha o cursor em movimento durante a prova. Paradas prolongadas são registradas."
+    );
+    holdVeilFor("idle", "Tela protegida");
+  }, Config.MOUSE_IDLE_MS);
+}
+
+function handleMouseActivity() {
+  resetIdleTimer();
+}
 
 function isPrintScreen(event) {
   return event.key === "PrintScreen" || event.code === "PrintScreen" || event.keyCode === 44;
@@ -36,26 +73,26 @@ function detectMouseLeave(event) {
   const leftViewport = !event.relatedTarget && !event.toElement;
   if (leftViewport) {
     onViolation("Mouse fora da tela", "Mantenha o cursor dentro da janela durante toda a avaliação.");
-    onVeilHold("Tela protegida");
+    holdVeilFor("mouse-leave", "Tela protegida");
   }
 }
 
 function detectMouseReturn() {
-  onVeilRelease();
+  releaseVeilFor("mouse-leave");
 }
 
 function detectFocusLoss() {
   onViolation("Janela perdeu o foco", "Não troque de aba ou janela durante a prova.");
-  onVeilHold("Tela protegida");
+  holdVeilFor("focus-loss", "Tela protegida");
 }
 
 function detectFocusGain() {
-  onVeilRelease();
+  releaseVeilFor("focus-loss");
 }
 
 function detectVisibilityChange() {
   if (document.hidden) detectFocusLoss();
-  else onVeilRelease();
+  else releaseVeilFor("focus-loss");
 }
 
 function prevent(event) {
@@ -78,11 +115,14 @@ export const SecureModeView = Object.freeze({
     onVeilHold = holdHandler;
     onVeilFlash = flashHandler;
     onVeilRelease = releaseHandler;
+    veilReasons = new Set();
 
     attach("keydown", document, handleKeyDown, true);
     attach("keyup", document, handleKeyUp, true);
     attach("mouseout", document, detectMouseLeave);
     attach("mouseover", document, detectMouseReturn);
+    attach("mousemove", document, handleMouseActivity);
+    attach("mousedown", document, handleMouseActivity);
     attach("blur", window, detectFocusLoss);
     attach("focus", window, detectFocusGain);
     attach("visibilitychange", document, detectVisibilityChange);
@@ -91,10 +131,14 @@ export const SecureModeView = Object.freeze({
     attach("paste", document, prevent, true);
     attach("cut", document, prevent, true);
     attach("dragstart", document, prevent, true);
+    resetIdleTimer();
     requestFullscreen();
   },
 
   exit() {
+    clearTimeout(idleTimerId);
+    idleTimerId = null;
+    veilReasons = new Set();
     listeners.forEach(({ name, target, handler, options }) =>
       target.removeEventListener(name, handler, options)
     );

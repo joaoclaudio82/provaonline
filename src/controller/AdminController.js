@@ -32,7 +32,21 @@ export class AdminController {
   open() {
     AdminView.renderConfig(this.#examConfig);
     AdminView.renderResultsTable(ResultRepository.findAll());
+    this.#refreshRosterView();
     ScreenView.show("screen-admin");
+  }
+
+  #refreshRosterView() {
+    if (!this.#roster.isCustom()) {
+      AdminView.renderRosterTable([]);
+      AdminView.setRosterStatus(
+        "Nenhuma turma importada. Sem importação, o sistema usa uma lista de teste (aluno01 / 123 …)."
+      );
+      return;
+    }
+    const students = this.#roster.list();
+    AdminView.renderRosterTable(students);
+    AdminView.setRosterStatus(`${students.length} estudante(s) importado(s) do CSV.`);
   }
 
   #handleSaveConfig() {
@@ -43,17 +57,23 @@ export class AdminController {
   }
 
   #handleCsvSelected(event) {
-    const file = event.target.files[0];
+    const input = event.target;
+    const file = input.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
       const students = CsvCodec.parseRoster(reader.result);
-      if (students.length === 0) return AdminView.setCsvStatus("CSV inválido");
+      if (students.length === 0) {
+        AdminView.setCsvStatus("CSV inválido ou vazio");
+        return;
+      }
       const loaded = this.#roster.load(students);
-      AdminView.setCsvStatus(`${loaded} estudantes carregados`);
+      AdminView.setCsvStatus(`${file.name} · ${loaded} estudante(s)`);
+      this.#refreshRosterView();
       this.#onRosterChanged();
     };
     reader.readAsText(file, "utf-8");
+    input.value = "";
   }
 
   #handleExport() {

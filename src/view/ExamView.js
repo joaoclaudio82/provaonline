@@ -3,6 +3,57 @@ import { Utils } from "../utils/Utils.js";
 
 let onSelect = null;
 let totalQuestions = 0;
+let visibilityObserver = null;
+let visibilityRatios = new Map();
+
+function updateActiveQuestionCard(cards) {
+  let bestCard = null;
+  let bestRatio = 0;
+  cards.forEach((card) => {
+    const ratio = visibilityRatios.get(card) || 0;
+    if (ratio > bestRatio) {
+      bestRatio = ratio;
+      bestCard = card;
+    }
+  });
+  cards.forEach((card) => {
+    card.classList.toggle("qcard-active", card === bestCard && bestRatio > 0);
+  });
+}
+
+function stopQuestionVisibilityObserver() {
+  if (visibilityObserver) {
+    visibilityObserver.disconnect();
+    visibilityObserver = null;
+  }
+  visibilityRatios = new Map();
+}
+
+function startQuestionVisibilityObserver(container) {
+  stopQuestionVisibilityObserver();
+  const cards = container.querySelectorAll(".qcard");
+  if (!cards.length) return;
+
+  visibilityRatios = new Map();
+  cards.forEach((card, index) => {
+    visibilityRatios.set(card, index === 0 ? 1 : 0);
+    card.classList.toggle("qcard-active", index === 0);
+  });
+
+  visibilityObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        visibilityRatios.set(entry.target, entry.intersectionRatio);
+      });
+      updateActiveQuestionCard(cards);
+    },
+    {
+      root: container,
+      threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],
+    }
+  );
+  cards.forEach((card) => visibilityObserver.observe(card));
+}
 
 // Renderiza a tela da prova: questões, alternativas, progresso e relógio.
 export const ExamView = Object.freeze({
@@ -22,6 +73,11 @@ export const ExamView = Object.freeze({
     questions.forEach((question, questionIndex) => {
       container.appendChild(this._buildQuestionCard(question, questionIndex, answers[questionIndex]));
     });
+    startQuestionVisibilityObserver(container);
+  },
+
+  stopVisibilityTracking() {
+    stopQuestionVisibilityObserver();
   },
 
   _buildQuestionCard(question, questionIndex, selectedIndex) {

@@ -68,23 +68,25 @@
 
     <div class="rule"></div>
     <h2>2. Lista de estudantes</h2>
-    <p class="hint">Gere logins e senhas automaticamente ou envie um CSV com duas colunas <span class="pill">login,senha</span> (até 50).</p>
-    <div class="row" style="margin-top:14px; align-items:flex-end; gap:20px">
+    <p class="hint">Importe um CSV com duas colunas <span class="pill">login,senha</span> (cabeçalho opcional, até 50 linhas). Ex.: <span class="pill">exemplos/estudantes_turma.csv</span>.</p>
+    <div class="row" style="margin-top:14px; align-items:center; gap:12px">
+      <button class="btn" id="btn-pick-csv">Importar turma (CSV)</button>
+      <input type="file" id="csv-input" accept=".csv,text/csv" class="hide">
+      <span class="pill" id="csv-status">nenhum arquivo importado</span>
+    </div>
+    <p class="hint" id="roster-status">Nenhuma turma carregada.</p>
+    <div id="roster-box"></div>
+    <div class="rule" style="margin:22px 0"></div>
+    <p class="hint">Ou gere logins e senhas automaticamente para testes:</p>
+    <div class="row" style="margin-top:10px; align-items:flex-end; gap:20px">
       <div class="field" style="margin-bottom:0">
         <label for="roster-count">Quantidade</label>
         <input type="number" id="roster-count" min="1" max="50" step="1" value="30" style="width:140px">
       </div>
-      <button class="btn" id="btn-generate-roster">Gerar logins e senhas</button>
+      <button class="btn alt" id="btn-generate-roster">Gerar logins e senhas</button>
       <button class="btn alt" id="btn-download-roster" disabled>Baixar lista (CSV)</button>
     </div>
     <div class="err" id="roster-err"></div>
-    <p class="hint" id="roster-status">Nenhuma turma carregada.</p>
-    <div id="roster-box"></div>
-    <div class="field" style="margin-top:18px">
-      <button class="btn alt" id="btn-pick-csv">Ou selecionar arquivo CSV</button>
-      <input type="file" id="csv-input" accept=".csv,text/csv" class="hide">
-      <span class="pill" id="csv-status" style="margin-left:10px">nenhum arquivo</span>
-    </div>
     <div class="rule"></div>
     <h2>3. Banco de questões</h2>
     <p class="hint" id="question-bank-status">Carregando banco de questões…</p>

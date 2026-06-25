@@ -23,7 +23,7 @@ services:
       db:
         condition: service_healthy
     ports:
-      - "8000:8000"
+      - "${BACKEND_HOST_PORT:-8000}:8000"
 
   frontend:
     image: nginx:1.27-alpine
@@ -32,7 +32,7 @@ services:
       - ./frontend/styles:/usr/share/nginx/html/styles:ro
       - ./frontend/src:/usr/share/nginx/html/src:ro
     ports:
-      - "8080:80"
+      - "${FRONTEND_HOST_PORT:-8080}:80"
     depends_on:
       - backend
 
